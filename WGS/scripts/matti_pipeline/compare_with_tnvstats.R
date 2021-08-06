@@ -96,9 +96,9 @@ samples <- samples[-1, ] # the first row is the colname
 names(samples) <- c("sample_id", "percentage_genePanel", "percentage_WGS") # rename the cols
 samples$sample_id <- paste0("filtered_RG_", samples$sample_id, ".bam")# some string modifications to make sure the names match across data frames
 
-samples <- samples %>%filter(sample_id %in% combined$sample_t)
+# samples <- samples %>%filter(sample_id %in% combined$sample_t)
 
-combined <- inner_join(combined, samples, by = c("sample_t" = "sample_id")) # only keep the samples that are found in both dfs to have t
+combined <- left_join(combined, samples, by = c("sample_t" = "sample_id")) # only keep the samples that are found in both dfs to have t
 combined$percentage_WGS <- as.numeric(combined$percentage_WGS)
 combined <- combined[order(combined$percentage_WGS),]
 
