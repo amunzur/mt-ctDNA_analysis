@@ -1,14 +1,18 @@
 # This script calculates WPS from bed files. 
+library(tidyverse)
+library(argparse)
 
 parser <- ArgumentParser(description = "Calculate window protection score bed files.")
 
 parser$add_argument('--path-to-bed', metavar='FILE', type='character', help="Path to the bed file from one single sample.")
-args <- parser$parse_args()
+parser$add_argument('--window-size')
 
-library(tidyverse)
+args <- parser$parse_args()
 
 # given a genome size in bp, generate a list of all windows with a given size. start and end pos given.
 generate_windows <- function(genome_length, window_size) {
+
+	window_size <- as.numeric(window_size)
 
 	mid_pos <- seq(0, genome_length-1, 1) # because bed is 0 based
 	start_pos <- mid_pos - window_size/2
@@ -152,36 +156,23 @@ main <- function(window_size, path_to_bed){
 	dir.create(dir_to_figs, showWarnings = FALSE)
 	dir.create(dir_to_WPS_files, showWarnings = FALSE)
 
-	for (path_to_bed in list.files(dir_to_beds, full.names = TRUE)){
+	sample_name <- gsub(".bed|RG_filtered_RG_", "", basename(path_to_bed)) # will be used to name the plot
+	message("Started sample ", sample_name, ".")
 
-		message("Started sample ", sample_name, ".")
+	window_df <- generate_windows(16569, window_size)
+	fragment_df <- generate_fragments(path_to_bed)
 
-		sample_name <- gsub(".bed|RG_filtered_RG_", "", basename(path_to_bed)) # will be used to name the plot
-		window_df <- generate_windows(16569, window_size)
-		fragment_df <- generate_fragments(path_to_bed)
+	message("Computing WPS.")
+	output_dir <- file.path(dir_to_WPS_files, paste0(sample_name, ".tsv")) # WPS df will be saved here
+	WPS_df <- compute_WPS(window_df, fragment_df, output_dir)
+	WPS_df <- add_coverage_info(path_to_bed, dir_to_coverage, WPS_df)
 
-		message("Computing WPS.")
-		output_dir <- file.path(dir_to_WPS_files, paste0(sample_name, ".tsv")) # WPS df will be saved here
-		WPS_df <- compute_WPS(window_df, fragment_df, output_dir)
-		WPS_df <- add_coverage_info(path_to_bed, dir_to_coverage, WPS_df)
+	message("Plotting.")
+	fig_path <- file.path(dir_to_figs, paste0(sample_name, ".png"))
+	plotting(WPS_df, fig_path)
 
-		message("Plotting.")
-		fig_path <- file.path(dir_to_figs, paste0(sample_name, ".png"))
-		plotting(WPS_df, fig_path)
+	} # end of function
 
-	} # end of for loop
-
-} # end of function
-
-main()
-
-
-
-extract_velocity_info(path_to_data = args$path_to_data, 
-                      counts_matrix = args$counts_matrix, 
-                      pca_coords = args$pca_coords, 
-                      tsne_coords = args$tsne_coords, 
-                      umap_coords = args$umap_coords, 
-                      clusters = args$clusters, 
-                      data_type = args$data_type)
-
+# CALL THE FUNCTION WITH THE CM ARGS
+main(window_size = args$window_size,
+	path_to_bed = args$path_to_bed)
