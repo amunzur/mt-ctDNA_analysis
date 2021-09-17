@@ -1,4 +1,3 @@
-# This script calculates WPS from bed files. 
 library(tidyverse)
 library(argparse)
 
@@ -23,7 +22,6 @@ generate_windows <- function(genome_length, window_size) {
 
 	return(window_df)
 }
-
 
 # given one bed file, generate a list of all fragments=
 generate_fragments <- function(path_to_bed) {
@@ -52,7 +50,8 @@ compute_WPS <- function(window_df, fragment_df, output_dir){
 
 	compute_WPS_per_window <- function(x, fragment_df){
 
-		# print(x)
+		if (x$window_start %% 1000 == 0) {message("Position ", x$window_start)}
+		
 		# right end point in window
 		right_end <- dim(fragment_df %>% filter(fr_start <= x$window_start & 
 												fr_end <= x$window_end & 
@@ -86,8 +85,7 @@ compute_WPS <- function(window_df, fragment_df, output_dir){
 	WPS_df <- WPS_df %>% filter(window_start >= 0, 
 								window_end <= 19569)
 
-	write_csv(WPS_df, file.path(output_dir, "WPS.csv"))
-	write_delim(WPS_df, file.path(output_dir, "WPS.tsv"), delim = "\t")
+	write_delim(WPS_df, output_dir, delim = "\t")
 
 	return(WPS_df)
 }
