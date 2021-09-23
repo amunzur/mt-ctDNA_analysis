@@ -1,9 +1,13 @@
 #!/bin/bash
-configfile="/groups/wyattgrp/users/amunzur/mt-ctDNA/WGS/scripts/hunt_mito_reads/config.txt"
+# configfile="/groups/wyattgrp/users/amunzur/mt-ctDNA/WGS/scripts/hunt_mito_reads/config.txt"
+# conda_profile_path="/home/$(whoami)/anaconda3/etc/profile.d/conda.sh"
+# source ${configfile};
+
+script_dir="/groups/wyattgrp/users/amunzur/mt-ctDNA/WGS/scripts/hunt_mito_reads"
 conda_profile_path="/home/$(whoami)/anaconda3/etc/profile.d/conda.sh"
-source ${configfile};
+alignment_tool="bowtie2" # bwa or bowtie2
 source ${conda_profile_path};
-conda activate alignment 
+conda activate alignment # has both bwa and bowtie2
 
 cd /groups/wyattgrp/users/amunzur/mt-ctDNA/WGS/bams/mt_bams
 
